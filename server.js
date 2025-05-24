@@ -7,8 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const TMDB_API_KEY =d932571ac3e721797d7f547ff74d3636 process.env.TMDB_API_KEY;
+const OPENAI_API_KEY =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 process.env.OPENAI_API_KEY;
 
 app.get('/films-recents', async (req, res) => {
   const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=fr-FR&page=1`);
