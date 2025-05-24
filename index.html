@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Critiques Films IA</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 1rem; }
+    .film { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; }
+    img { height: 150px; border-radius: 4px; }
+    .info { flex: 1; }
+    .titre { font-weight: bold; font-size: 1.2rem; }
+    button { margin-top: 0.5rem; padding: 0.5rem 1rem; }
+    .critique { margin-top: 0.5rem; font-style: italic; color: #444; }
+  </style>
+</head>
+<body>
+  <h1>Films récents au cinéma – Critiques générées par IA</h1>
+  <div id="films"></div>
+
+  <script>
+    const baseImg = 'https://image.tmdb.org/t/p/w200';
+
+    async function chargerFilms() {
+      const res = await fetch('http://localhost:3000/films-recents');
+      const films = await res.json();
+      const container = document.getElementById('films');
+      container.innerHTML = '';
+
+      films.forEach(film => {
+        const div = document.createElement('div');
+        div.className = 'film';
+
+        const img = document.createElement('img');
+        img.src = baseImg + film.poster_path;
+
+        const info = document.createElement('div');
+        info.className = 'info';
+        info.innerHTML = `<div class="titre">${film.title}</div>`;
+
+        const btn = document.createElement('button');
+        btn.textContent = "Voir la critique IA";
+        const critiqueDiv = document.createElement('div');
+        critiqueDiv.className = 'critique';
+
+        btn.onclick = async () => {
+          critiqueDiv.textContent = 'Chargement de la critique...';
+          const resCritique = await fetch('http://localhost:3000/generer-critique', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titre: film.title })
+          });
+          const data = await resCritique.json();
+          critiqueDiv.textContent = data.critique;
+        };
+
+        info.appendChild(btn);
+        info.appendChild(critiqueDiv);
+        div.appendChild(img);
+        div.appendChild(info);
+        container.appendChild(div);
+      });
+    }
+
+    chargerFilms();
+  </script>
+</body>
+</html>
