@@ -2,67 +2,70 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Critiques Films IA</title>
+  <title>Générateur de critiques de films</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 1rem; }
-    .film { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 1rem; }
-    img { height: 150px; border-radius: 4px; }
-    .info { flex: 1; }
-    .titre { font-weight: bold; font-size: 1.2rem; }
-    button { margin-top: 0.5rem; padding: 0.5rem 1rem; }
-    .critique { margin-top: 0.5rem; font-style: italic; color: #444; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+    }
+    #review {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
-  <h1>Films récents au cinéma – Critiques générées par IA</h1>
-  <div id="films"></div>
+
+  <h1>Générateur de critiques de films</h1>
+  <input id="movieTitle" type="text" placeholder="Titre du film" />
+  <button id="generateBtn">Générer la critique</button>
+
+  <div id="review"></div>
 
   <script>
-    const baseImg = 'https://image.tmdb.org/t/p/w200';
+    const btn = document.getElementById('generateBtn');
+    const input = document.getElementById('movieTitle');
+    const reviewDiv = document.getElementById('review');
 
-    async function chargerFilms() {
-      const res = await fetch('http://localhost:3000/films-recents');
-      const films = await res.json();
-      const container = document.getElementById('films');
-      container.innerHTML = '';
+    btn.addEventListener('click', async () => {
+      const title = input.value.trim();
+      if (!title) {
+        alert('Veuillez entrer un titre de film.');
+        return;
+      }
+      reviewDiv.textContent = 'Génération en cours...';
 
-      films.forEach(film => {
-        const div = document.createElement('div');
-        div.className = 'film';
-
-        const img = document.createElement('img');
-        img.src = baseImg + film.poster_path;
-
-        const info = document.createElement('div');
-        info.className = 'info';
-        info.innerHTML = `<div class="titre">${film.title}</div>`;
-
-        const btn = document.createElement('button');
-        btn.textContent = "Voir la critique IA";
-        const critiqueDiv = document.createElement('div');
-        critiqueDiv.className = 'critique';
-
-        btn.onclick = async () => {
-          critiqueDiv.textContent = 'Chargement de la critique...';
-          const resCritique = await fetch('http://localhost:3000/generer-critique', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ titre: film.title })
-          });
-          const data = await resCritique.json();
-          critiqueDiv.textContent = data.critique;
-        };
-
-        info.appendChild(btn);
-        info.appendChild(critiqueDiv);
-        div.appendChild(img);
-        div.appendChild(info);
-        container.appendChild(div);
-      });
-    }
-
-    chargerFilms();
+      try {
+        const response = await fetch('https://film-review-backend.onrender.com/generate-review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ movieTitle: title })
+        });
+        const data = await response.json();
+        if (data.review) {
+          reviewDiv.textContent = data.review;
+        } else if (data.error) {
+          reviewDiv.textContent = 'Erreur : ' + data.error;
+        } else {
+          reviewDiv.textContent = 'Erreur inconnue';
+        }
+      } catch (err) {
+        reviewDiv.textContent = 'Erreur réseau ou serveur.';
+      }
+    });
   </script>
+
 </body>
 </html>
